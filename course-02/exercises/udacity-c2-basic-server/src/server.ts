@@ -1,4 +1,4 @@
-import express, { Router, Request, Response } from 'express';
+import express, { Router, Request, Response, response } from 'express';
 import bodyParser from 'body-parser';
 
 import { Car, cars as cars_list } from './cars';
@@ -70,13 +70,61 @@ import { Car, cars as cars_list } from './cars';
 
   // @TODO Add an endpoint to GET a list of cars
   // it should be filterable by make with a query paramater
+  app.get("/carsByMake/", async(req:Request, res:Response) => {
+    const {make} = req.query;
+
+    if(!make){
+      return res.status(400).send('make is required');
+    }
+
+    let cars_list = cars.filter((car) => car.make == make);
+
+    return res.status(200).send(cars_list);
+
+  })
+
 
   // @TODO Add an endpoint to get a specific car
   // it should require id
   // it should fail gracefully if no matching car is found
+  app.get("/carsById/", async(req:Request, res:Response) => {
+    const { id }  = req.query;
+
+    if(id)
+    {
+      let cars_list = cars.filter((car) => car.id == id);
+      if (cars_list.length)
+        {
+          return res.status(200).send(cars_list);
+        } 
+
+      return res.status(200).send("FAIL, No matching caars")
+    }
+
+
+    return res.status(400).send("id is required");
+
+  })
 
   /// @TODO Add an endpoint to post a new car to our list
   // it should require id, type, model, and cost
+app.post("/addCar",
+            async(req : Request, res : Response) =>{
+              let {make, type, model, cost, id} = req.body;
+              if(!(make && type && model && cost && id))
+              {
+                return res.status(400).send('send all params please!');
+              }
+
+              const newCar:Car = {make:make, type:type, model:model, cost:cost, id:id};
+              cars.push(newCar);
+              
+              return res.status(200).send(newCar);
+
+            }
+
+)
+
 
   // Start the Server
   app.listen( port, () => {
